@@ -52,7 +52,7 @@ jobs:
         run: |
           ARCH=${{ matrix.arch }}
           VERSION=${{ steps.get_version.outputs.version }}
-          SRC="dist/$VERSION/lzf-music-$VERSION-macos.dmg"
+          SRC="dist/$VERSION/lzf_music-$VERSION-macos.dmg"
           DST="dist/$VERSION/LZF-Music-$VERSION-macos-$ARCH.dmg"
           mv "$SRC" "$DST"
 
