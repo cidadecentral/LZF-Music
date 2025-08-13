@@ -1,0 +1,22 @@
+name: Build and Release Flutter App
+
+on: push
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: flutter build macos --release
+      # 安装 flutter_distributor
+      - run: dart pub global activate fastforge
+      # 打包 DMG
+      - run: fastforge package --platform macos --targets dmg --skip-clean
+      # 上传到 Release
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: $(find dist -name "*.dmg")
