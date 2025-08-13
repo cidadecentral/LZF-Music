@@ -66,5 +66,7 @@ jobs:
           name: Release ${{ github.ref_name }}
           body: |
             🎉 发布版本 ${{ github.ref_name }}
-            - 支持 macOS 多架构 DMG
+            - 优化内存占用
+            - 歌词页面采样率没有换算问题
+            - mac默认窗口位置居中
           files: dist/${{ steps.get_version.outputs.version }}/LZF-Music-${{ steps.get_version.outputs.version }}-macos-${{ matrix.arch }}.dmg

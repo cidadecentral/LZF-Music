@@ -439,7 +439,7 @@ class _ImprovedNowPlayingScreenState extends State<ImprovedNowPlayingScreen> {
                                             ),
                                           ),
                                           child: Text(
-                                            "${currentSong?.bitrate ?? '未知'} kbps",
+                                            "${currentSong?.bitrate != null ? (currentSong!.bitrate! / 1000).toStringAsFixed(0) : '未知'} kbps",
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 12,

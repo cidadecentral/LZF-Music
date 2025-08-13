@@ -37,9 +37,9 @@ class LibraryViewState extends State<LibraryView> implements ShowAwarePage {
   void initState() {
     super.initState();
     database = Provider.of<MusicDatabase>(context, listen: false);
-    
+
     importService = MusicImportService(database);
-    
+
     _scrollController.addListener(() {
       if (!_isScrolling &&
           _scrollController.position.pixels !=
@@ -369,27 +369,32 @@ class LibraryViewState extends State<LibraryView> implements ShowAwarePage {
                                               decoration: BoxDecoration(
                                                 borderRadius:
                                                     BorderRadius.circular(4),
-                                                image:
-                                                    songs[index].albumArtPath !=
-                                                        null
-                                                    ? DecorationImage(
-                                                        image: FileImage(
-                                                          File(
-                                                            songs[index]
-                                                                .albumArtPath!,
-                                                          ),
-                                                        ),
-                                                        fit: BoxFit.cover,
-                                                      )
-                                                    : null,
                                               ),
                                               child:
-                                                  songs[index].albumArtPath ==
+                                                  songs[index].albumArtPath !=
                                                       null
-                                                  ? const Icon(
-                                                      Icons.music_note_rounded,
+                                                  ? ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            4,
+                                                          ),
+                                                      child: Image.file(
+                                                        File(
+                                                          songs[index]
+                                                              .albumArtPath!,
+                                                        ),
+                                                        width: 50,
+                                                        height: 50,
+                                                        fit: BoxFit.cover,
+                                                        cacheWidth:
+                                                            50, // 🔹关键：解码到小尺寸
+                                                        cacheHeight:
+                                                            50, // 🔹关键：解码到小尺寸
+                                                      ),
                                                     )
-                                                  : null,
+                                                  : const Icon(
+                                                      Icons.music_note_rounded,
+                                                    ),
                                             ),
                                             const SizedBox(width: 10),
                                             // 歌曲信息
@@ -553,7 +558,9 @@ class LibraryViewState extends State<LibraryView> implements ShowAwarePage {
                             },
                             iconSize: 20,
                             icon: Icon(
-                              songs[index].isFavorite?Icons.favorite_rounded:Icons.favorite_outline_rounded,
+                              songs[index].isFavorite
+                                  ? Icons.favorite_rounded
+                                  : Icons.favorite_outline_rounded,
                               color: songs[index].isFavorite
                                   ? Colors.red
                                   : null,
