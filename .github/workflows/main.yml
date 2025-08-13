@@ -1,6 +1,9 @@
 name: Build and Release Flutter App
 
-on: push
+on:
+  push:
+    tags:
+      - 'v*' 
 
 jobs:
   build-macos:
@@ -15,8 +18,6 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-
-      - run: flutter pub get
 
       # 切换 EXCLUDED_ARCHS
       - name: Switch EXCLUDED_ARCHS
@@ -34,8 +35,9 @@ jobs:
       # 安装打包工具
       - run: dart pub global activate fastforge
       - run: npm install -g appdmg
+
       # 打包 DMG
-      - run: fastforge package --platform macos --targets dmg --skip-clean
+      - run: fastforge package --platform macos --targets dmg
 
       # 获取 Flutter 版本号
       - name: Get Flutter version
@@ -49,13 +51,17 @@ jobs:
       - name: Rename DMG with architecture
         run: |
           ARCH=${{ matrix.arch }}
-          VERSION=${{ steps.get_version.outputs.version }}
-          SRC="dist/$VERSION/lzf_music-$VERSION-macos.dmg"
-          DST="dist/$VERSION/lzf_music-$VERSION-macos-$ARCH.dmg"
+          SRC="dist/$VERSION/lzf-music-$VERSION-macos.dmg"
+          DST="dist/$VERSION/LZF-Music-$VERSION-macos-$ARCH.dmg"
           mv "$SRC" "$DST"
 
       # 上传到 Release
       - name: Upload DMG to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            🎉 发布版本 ${{ github.ref_name }}
+            - 支持 macOS 多架构 DMG
           files: $(find dist -name "*.dmg")
