@@ -65,4 +65,4 @@ jobs:
           body: |
             🎉 发布版本 ${{ github.ref_name }}
             - 支持 macOS 多架构 DMG
-          files: $(find dist -name "*.dmg")
+          files: dist/${{ steps.get_version.outputs.version }}/LZF-Music-${{ steps.get_version.outputs.version }}-macos-${{ matrix.arch }}.dmg
