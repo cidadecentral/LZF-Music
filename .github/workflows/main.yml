@@ -5,18 +5,59 @@ on: push
 jobs:
   build-macos:
     runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: [x86_64, arm64, universal]
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+
       - run: flutter pub get
-      - run: flutter build macos --release
-      # 安装 flutter_distributor
+
+      # 切换 EXCLUDED_ARCHS
+      - name: Switch EXCLUDED_ARCHS
+        run: |
+          PBXPROJ="macos/Runner.xcodeproj/project.pbxproj"
+          ARCH=${{ matrix.arch }}
+          if [[ "$ARCH" == "universal" ]]; then
+            sed -i '' 's/EXCLUDED_ARCHS = .*;/EXCLUDED_ARCHS = "";/g' "$PBXPROJ"
+          elif [[ "$ARCH" == "x86_64" ]]; then
+            sed -i '' 's/EXCLUDED_ARCHS = .*;/EXCLUDED_ARCHS = "arm64";/g' "$PBXPROJ"
+          elif [[ "$ARCH" == "arm64" ]]; then
+            sed -i '' 's/EXCLUDED_ARCHS = .*;/EXCLUDED_ARCHS = "x86_64";/g' "$PBXPROJ"
+          fi
+
+      # 构建 macOS App
+      - name: Build macOS App
+      # 安装打包工具
       - run: dart pub global activate fastforge
+      - run: npm install -g appdmg
       # 打包 DMG
       - run: fastforge package --platform macos --targets dmg --skip-clean
+
+      # 获取 Flutter 版本号
+      - name: Get Flutter version
+        id: get_version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}' | cut -d+ -f1)
+          echo "Version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      # 重命名 DMG 文件，加入架构
+      - name: Rename DMG with architecture
+        run: |
+          ARCH=${{ matrix.arch }}
+          VERSION=${{ steps.get_version.outputs.version }}
+          SRC="dist/$VERSION/lzf_music-$VERSION-macos.dmg"
+          DST="dist/$VERSION/lzf_music-$VERSION-macos-$ARCH.dmg"
+          mv "$SRC" "$DST"
+
       # 上传到 Release
-      - uses: softprops/action-gh-release@v1
+      - name: Upload DMG to GitHub Release
+        uses: softprops/action-gh-release@v1
         with:
           files: $(find dist -name "*.dmg")
