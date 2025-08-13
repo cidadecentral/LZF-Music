@@ -31,8 +31,6 @@ jobs:
             sed -i '' 's/EXCLUDED_ARCHS = .*;/EXCLUDED_ARCHS = "x86_64";/g' "$PBXPROJ"
           fi
 
-      # 构建 macOS App
-      - name: Build macOS App
       # 安装打包工具
       - run: dart pub global activate fastforge
       - run: npm install -g appdmg
