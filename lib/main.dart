@@ -52,14 +52,16 @@ void main() async {
       ),
     );
 
-    // 配合 bitsdojo_window，给桌面应用窗口添加拖拽区域
-    doWhenWindowReady(() {
-      final win = appWindow;
-      win.minSize = const Size(1080, 720);
-      win.size = const Size(1080, 720);
-      win.alignment = Alignment.center;
-      win.show();
-    });
+    final bool isWindows = Platform.isWindows;
+    if (isWindows) {
+      doWhenWindowReady(() {
+        final win = appWindow;
+        win.minSize = const Size(1080, 720);
+        win.size = const Size(1080, 720);
+        win.alignment = Alignment.center;
+        win.show();
+      });
+    }
   } catch (e) {
     debugPrint('应用初始化失败: $e');
   }
@@ -102,10 +104,7 @@ class MainApp extends StatelessWidget {
             // Windows 平台，自定义标题栏覆盖内容，不推内容，透明
             return Stack(
               children: [
-                if (child != null)
-                  Positioned.fill(
-                    child: child,
-                  ),
+                if (child != null) Positioned.fill(child: child),
                 const Positioned(
                   top: 0,
                   left: 0,

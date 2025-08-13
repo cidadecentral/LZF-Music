@@ -1,0 +1,14 @@
+platforms:
+  macos:
+    targets:
+      dmg:
+        icon: assets/icons/macos.icns
+        contents:
+          - x: 150
+            y: 200
+            type: file
+            path: build/macos/Build/Products/Release/LZF Music.app
+          - x: 450
+            y: 200
+            type: link
+            path: /Applications
