@@ -56,7 +56,7 @@ jobs:
           DST="dist/$VERSION/LZF-Music-$VERSION-macos-$ARCH.dmg"
           mv "$SRC" "$DST"
 
-      # 上传到 Release
+      # 上传到 Release 
       - name: Upload DMG to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
