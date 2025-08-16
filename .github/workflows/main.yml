@@ -92,29 +92,22 @@ jobs:
           $innoPath = "C:\Program Files (x86)\Inno Setup 6"
           echo "$innoPath" >> $env:GITHUB_PATH
 
+      - name: Copy Chinese language pack
+        run: |
+          $sourceFile = "windows\packaging\exe\ChineseSimplified.isl"
+          $targetDir = "C:\Program Files (x86)\Inno Setup 6\Languages"
+          $targetFile = "$targetDir\ChineseSimplified.isl"
+          
+          if (Test-Path $sourceFile) {
+            Copy-Item $sourceFile $targetFile -Force
+            Write-Host "Chinese language pack copied successfully"
+          } else {
+            Write-Host "Chinese language pack not found in project"
+          }
+
       # 安装 fastforge
       - name: Install fastforge
         run: dart pub global activate fastforge
-
-      # 创建 Windows 打包配置
-      - name: Create Windows packaging config
-        run: |
-          # 确保目录存在
-          New-Item -ItemType Directory -Force -Path "windows\packaging\exe"
-          
-          # 创建配置文件
-          @"
-          # AppId 的值唯一标识此应用
-          app_id: $(New-Guid)
-          publisher: Your Name
-          publisher_url: https://github.com/yourusername/lzf-music
-          display_name: LZF Music
-          create_desktop_icon: true
-          setup_icon_file: windows\runner\resources\app_icon.ico
-          locales:
-            - en
-            - zh
-          "@ | Out-File -FilePath "windows\packaging\exe\make_config.yaml" -Encoding UTF8
 
       # 获取 Flutter 版本号
       - name: Get Flutter version
