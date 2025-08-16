@@ -125,7 +125,7 @@ class RecentlyPlayedViewState extends State<RecentlyPlayedView>
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
@@ -214,7 +214,7 @@ class RecentlyPlayedViewState extends State<RecentlyPlayedView>
                           ],
                         ),
                       ),
-                      const SizedBox(width: 80), // 为更多按钮预留空间
+                      const SizedBox(width: 80,height: 40,), // 为更多按钮预留空间
                     ],
                   ),
                 ),
@@ -265,18 +265,16 @@ class RecentlyPlayedViewState extends State<RecentlyPlayedView>
                                   // 使用Container来扩展可点击区域，覆盖整个左侧
                                   width: double.infinity,
                                   height: double.infinity,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Stack(
-                                      children: [
-                                        // 透明的全覆盖层，确保整个区域都可以点击
-                                        Positioned.fill(
-                                          child: Container(
-                                            color: Colors.transparent,
-                                          ),
-                                        ),
-                                        // 实际内容
-                                        Row(
+                                  child: Stack(
+                                    children: [
+                                      // 透明的全覆盖层，确保整个区域都可以点击
+                                      Positioned.fill(
+                                        child: Container(color: Colors.transparent),
+                                      ),
+                                      // 实际内容
+                                      Padding(
+                                        padding: EdgeInsets.all(8),
+                                        child: Row(
                                           children: [
                                             // 封面图
                                             Container(
@@ -285,27 +283,30 @@ class RecentlyPlayedViewState extends State<RecentlyPlayedView>
                                               decoration: BoxDecoration(
                                                 borderRadius:
                                                     BorderRadius.circular(4),
-                                                image:
-                                                    songs[index].albumArtPath !=
-                                                        null
-                                                    ? DecorationImage(
-                                                        image: FileImage(
-                                                          File(
-                                                            songs[index]
-                                                                .albumArtPath!,
-                                                          ),
-                                                        ),
-                                                        fit: BoxFit.cover,
-                                                      )
-                                                    : null,
                                               ),
                                               child:
-                                                  songs[index].albumArtPath ==
+                                                  songs[index].albumArtPath !=
                                                       null
-                                                  ? const Icon(
-                                                      Icons.music_note_rounded,
+                                                  ? ClipRRect(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            4,
+                                                          ),
+                                                      child: Image.file(
+                                                        File(
+                                                          songs[index]
+                                                              .albumArtPath!,
+                                                        ),
+                                                        width: 50,
+                                                        height: 50,
+                                                        fit: BoxFit.cover,
+                                                        cacheWidth: 150,
+                                                        cacheHeight: 150,
+                                                      ),
                                                     )
-                                                  : null,
+                                                  : const Icon(
+                                                      Icons.music_note_rounded,
+                                                    ),
                                             ),
                                             const SizedBox(width: 10),
                                             // 歌曲信息
@@ -441,8 +442,8 @@ class RecentlyPlayedViewState extends State<RecentlyPlayedView>
                                             ),
                                           ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -465,8 +466,6 @@ class RecentlyPlayedViewState extends State<RecentlyPlayedView>
                                 songs[index] = songs[index].copyWith(
                                   isFavorite: !songs[index].isFavorite,
                                 );
-                                // 重新加载歌曲列表
-                                _loadSongs();
                               });
                             },
                             iconSize: 20,
@@ -547,11 +546,11 @@ class _LibraryHeaderState extends State<LibraryHeader> {
     return Row(
       children: [
         const Text(
-          '喜欢',
+          '最近播放',
           style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
         ),
         const SizedBox(width: 16),
-        Text('共${widget.songs.length}首喜欢的音乐'),
+        Text('共${widget.songs.length}首最近播放音乐'),
         const Spacer(),
         if (_showSearch)
           Expanded(

@@ -17,6 +17,11 @@ class _MiniPlayerState extends State<MiniPlayer> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final activeColor = (isDarkMode ? Colors.white : Colors.black87);
+    final inactiveColor = (isDarkMode ? Colors.white30 : Colors.black26);
+
     return Consumer<PlayerProvider>(
       builder: (context, playerProvider, child) {
         final currentSong = playerProvider.currentSong;
@@ -199,8 +204,8 @@ class _MiniPlayerState extends State<MiniPlayer> {
                     icon: Icon(
                       Icons.shuffle_rounded,
                       color: playerProvider.playMode == PlayMode.shuffle
-                          ? Theme.of(context).colorScheme.primary
-                          : null,
+                          ? activeColor
+                          : inactiveColor,
                     ),
                     onPressed: () {
                       if (playerProvider.playMode == PlayMode.shuffle) {
@@ -216,13 +221,14 @@ class _MiniPlayerState extends State<MiniPlayer> {
                       playerProvider.playMode == PlayMode.singleLoop
                           ? Icons.repeat_one_rounded
                           : Icons.repeat_rounded,
-                      color: playerProvider.playMode == PlayMode.loop || 
+                      color:
+                          playerProvider.playMode == PlayMode.loop ||
                               playerProvider.playMode == PlayMode.singleLoop
-                          ? Theme.of(context).colorScheme.primary
-                          : null,
+                          ? activeColor
+                          : inactiveColor,
                     ),
                     onPressed: () {
-                      if(playerProvider.playMode == PlayMode.singleLoop) {
+                      if (playerProvider.playMode == PlayMode.singleLoop) {
                         playerProvider.setPlayMode(PlayMode.sequence);
                         return;
                       }
@@ -239,15 +245,12 @@ class _MiniPlayerState extends State<MiniPlayer> {
                     children: [
                       // 上一首按钮
                       IconButton(
-                        icon: Icon(
-                          Icons.skip_previous_rounded,
-                          size: 40,
-                          color: playerProvider.hasPrevious
-                              ? null
-                              : Theme.of(context).disabledColor,
-                        ),
-                        onPressed: playerProvider.hasPrevious
-                            ? () async {
+                        icon: Icon(Icons.skip_previous_rounded, size: 40),
+                        onPressed:
+                            (playerProvider.playMode == PlayMode.sequence &&
+                                !playerProvider.hasPrevious)
+                            ? null
+                            : () async {
                                 try {
                                   await playerProvider.previous();
                                 } catch (e) {
@@ -257,8 +260,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                     );
                                   }
                                 }
-                              }
-                            : null,
+                              },
                       ),
                       // 播放/暂停按钮
                       Stack(
@@ -298,19 +300,12 @@ class _MiniPlayerState extends State<MiniPlayer> {
                       ),
                       // 下一首按钮
                       IconButton(
-                        icon: Icon(
-                          Icons.skip_next_rounded,
-                          size: 40,
-                          color:
-                              (playerProvider.hasNext ||
-                                  playerProvider.playMode == PlayMode.loop)
-                              ? null
-                              : Theme.of(context).disabledColor,
-                        ),
+                        icon: Icon(Icons.skip_next_rounded, size: 40),
                         onPressed:
-                            (playerProvider.hasNext ||
-                                playerProvider.playMode == PlayMode.loop)
-                            ? () async {
+                            (playerProvider.playMode == PlayMode.sequence &&
+                                !playerProvider.hasNext)
+                            ? null
+                            : () async {
                                 try {
                                   await playerProvider.next();
                                 } catch (e) {
@@ -320,8 +315,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                                     );
                                   }
                                 }
-                              }
-                            : null,
+                              },
                       ),
                     ],
                   ),

@@ -60,7 +60,7 @@ class ToggleablePopupMenu<T> extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(option.label),
+                Text(option.label,style: TextStyle(color: isSelected ? Theme.of(context).colorScheme.primary : null),),
                 const SizedBox(width: 4),
                 if (isSelected)
                   const Icon(Icons.check_rounded, size: 16),

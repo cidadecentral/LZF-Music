@@ -176,7 +176,7 @@ jobs:
             
             ### 🖥️ Windows 版本
             - **安装程序**: 支持 Windows 10/11 (x64)
-            - **功能**: 自动创建桌面快捷方式，支持中英文界面
+            - **功能**: 自动创建桌面快捷方式
             
             ### 🍎 macOS 版本  
             - **Intel (x86_64)**: 适用于 Intel Mac
@@ -184,10 +184,8 @@ jobs:
             - **通用版 (universal)**: 同时支持 Intel 和 Apple Silicon
             
             ### ✨ 更新内容
-            - 优化内存占用
-            - 歌词页面采样率没有换算问题
-            - macOS 默认窗口位置居中
-            - 新增 Windows 平台支持
+            - 支持按照添加时间排序
+            - 支持批量选择删除
           files: |
             macos-x86_64-dmg/*.dmg
             macos-arm64-dmg/*.dmg

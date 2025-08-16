@@ -4,6 +4,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:drift/drift.dart';
 import '../database/database.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:charset/charset.dart';
 import 'package:path/path.dart' as p; // 跨平台路径处理
 
 class MusicImportService {
@@ -37,6 +38,29 @@ class MusicImportService {
     }
   }
 
+  Future<void> importLRC(Song song) async {
+    final result = await FilePicker.platform.pickFiles(
+      allowedExtensions: ['lrc'],
+      type: FileType.custom,
+      allowMultiple: false,
+      lockParentWindow: false,
+    );
+
+    if (result != null) {
+      for (final file in result.files) {
+        final lyric = File(file.path!).readAsStringSync();
+        updateMetadata(File(song.filePath), (metadata) {
+          metadata.setLyrics("fuck you");
+        });
+        print(lyric);
+
+        final a = readMetadata(File(song.filePath), getImage: true);
+        print(a);
+        return;
+      }
+    }
+  }
+
   Future<void> _processDirectory(
     Directory directory, {
     int maxDepth = 3,
@@ -45,7 +69,10 @@ class MusicImportService {
     if (currentDepth > maxDepth) return;
     await for (final entity in directory.list(followLinks: false)) {
       if (entity is File) {
-        final extension = p.extension(entity.path).toLowerCase().replaceFirst('.', '');
+        final extension = p
+            .extension(entity.path)
+            .toLowerCase()
+            .replaceFirst('.', '');
         if (['mp3', 'm4a', 'wav', 'flac', 'aac'].contains(extension)) {
           await _processMusicFile(entity);
         }

@@ -337,6 +337,9 @@ class MusicDatabase extends _$MusicDatabase {
       }
       final Expression orderExpr;
       switch (orderField) {
+        case 'id':
+          orderExpr = song.duration;
+          break;
         case 'title':
           orderExpr = song.title;
           break;

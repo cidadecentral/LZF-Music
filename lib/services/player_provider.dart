@@ -45,8 +45,11 @@ class PlayerProvider with ChangeNotifier {
   Player get player => _audioService.player;
   double get volume => _volume;
 
-  bool get hasPrevious => playMode==PlayMode.shuffle?true: _currentIndex > 0;
-  bool get hasNext => playMode==PlayMode.shuffle?true:_currentIndex < _playlist.length - 1;
+  bool get hasPrevious =>
+      playMode == PlayMode.shuffle ? true : _currentIndex > 0;
+  bool get hasNext => playMode == PlayMode.shuffle
+      ? true
+      : _currentIndex < _playlist.length - 1;
 
   PlayerProvider() {
     _initializeListeners();
@@ -84,7 +87,7 @@ class PlayerProvider with ChangeNotifier {
   void _handleSongCompleteWithDebounce() {
     // 取消之前的定时器
     _completeDebounceTimer?.cancel();
-    
+
     // 设置新的定时器，延迟执行
     _completeDebounceTimer = Timer(const Duration(milliseconds: 100), () {
       if (!_isHandlingComplete) {
@@ -159,28 +162,35 @@ class PlayerProvider with ChangeNotifier {
   }
 
   Future<void> previous() async {
-    if (!hasPrevious) return;
+    if (_playlist.isEmpty) return;
     if (_playMode == PlayMode.shuffle) {
-      final randomIndex = DateTime.now().millisecondsSinceEpoch % _playlist.length;
+      final randomIndex =
+          DateTime.now().millisecondsSinceEpoch % _playlist.length;
       _currentIndex = randomIndex;
       await playSong(_playlist[_currentIndex]);
       return;
     }
-    _currentIndex--;
+    if (!hasPrevious && _playMode != PlayMode.loop&& _playMode != PlayMode.singleLoop) return;
+    if ((_playMode == PlayMode.loop||_playMode == PlayMode.singleLoop) && !hasPrevious) {
+      _currentIndex = _playlist.length-1;
+    } else {
+      _currentIndex--;
+    }
     await playSong(_playlist[_currentIndex]);
   }
 
   Future<void> next() async {
     if (_playlist.isEmpty) return;
     if (_playMode == PlayMode.shuffle) {
-      final randomIndex = DateTime.now().millisecondsSinceEpoch % _playlist.length;
+      final randomIndex =
+          DateTime.now().millisecondsSinceEpoch % _playlist.length;
       _currentIndex = randomIndex;
       await playSong(_playlist[_currentIndex]);
       return;
     }
 
-    if (!hasNext && _playMode != PlayMode.loop) return;
-    if (_playMode == PlayMode.loop && !hasNext) {
+    if (!hasNext && _playMode != PlayMode.loop&& _playMode != PlayMode.singleLoop) return;
+    if ((_playMode == PlayMode.loop||_playMode == PlayMode.singleLoop) && !hasNext) {
       _currentIndex = 0;
     } else {
       _currentIndex++;
@@ -273,7 +283,10 @@ class PlayerProvider with ChangeNotifier {
           break;
         case PlayMode.singleLoop:
           if (_currentSong != null) {
-            Future.microtask(() => playSong(_currentSong!));
+            Future.microtask(() => {
+              seekTo(Duration.zero),
+              _audioService.resume()
+            });
           }
           break;
         case PlayMode.sequence:
@@ -289,7 +302,8 @@ class PlayerProvider with ChangeNotifier {
           break;
         case PlayMode.shuffle:
           if (_playlist.isNotEmpty) {
-            final random = DateTime.now().millisecondsSinceEpoch % _playlist.length;
+            final random =
+                DateTime.now().millisecondsSinceEpoch % _playlist.length;
             _currentIndex = random;
             Future.microtask(() => playSong(_playlist[_currentIndex]));
           }

@@ -27,6 +27,8 @@ class LibraryViewState extends State<LibraryView> implements ShowAwarePage {
   String? orderField = null;
   String? orderDirection = null;
   String? searchKeyword = null;
+  bool _showCheckbox = false;
+  List<int> checkedIds = [];
 
   @override
   void onPageShow() {
@@ -136,7 +138,7 @@ class LibraryViewState extends State<LibraryView> implements ShowAwarePage {
               Padding(
                 padding: const EdgeInsets.only(left: 8),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
@@ -298,15 +300,134 @@ class LibraryViewState extends State<LibraryView> implements ShowAwarePage {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 40,),
-                      PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert_rounded),
-                        iconSize: 20,
-                        itemBuilder: (context) => const [
-                          PopupMenuItem(value: 'delete', child: Text('删除')),
-                        ],
-                        onSelected: (value) => {},
-                      ), // 为更多按钮预留空间
+                      SizedBox(width: !_showCheckbox ? 48 : 8),
+                      if (_showCheckbox)
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert),
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'hide',
+                              child: Text('隐藏选择框'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Text(
+                                '删除所选歌曲',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                          onSelected: (value) async {
+                            if (value == 'delete') {
+                              bool? confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('确认删除'),
+                                  content: const Text('确定要删除所选歌曲吗？'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false), // 点击取消
+                                      child: const Text('取消'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true), // 点击确定
+                                      child: const Text(
+                                        '确定',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+
+                              if (confirm == true) {
+                                if (checkedIds.isEmpty) {
+                                  CompactCenterSnackBar.show(
+                                    context,
+                                    '请勾选你要删除的歌曲',
+                                  );
+                                  return;
+                                }
+                                int len = checkedIds.length;
+                                for (var id in checkedIds) {
+                                  database.deleteSong(id);
+                                }
+                                CompactCenterSnackBar.show(
+                                  context,
+                                  "已删除${len}首歌",
+                                );
+                                _loadSongs();
+                                setState(() {
+                                  checkedIds.clear();
+                                  _showCheckbox = false;
+                                });
+                              }
+                            } else if (value == 'hide') {
+                              // 隐藏选择框逻辑
+                              setState(() {
+                                checkedIds.clear();
+                                _showCheckbox = false;
+                              });
+                            }
+                          },
+                        ),
+                      if (_showCheckbox)
+                        Checkbox(
+                          value:
+                              checkedIds.length == songs.length &&
+                              songs.isNotEmpty,
+                          onChanged: (v) {
+                            setState(() {
+                              if (v == true) {
+                                // 全选
+                                checkedIds
+                                  ..clear()
+                                  ..addAll(songs.map((s) => s.id));
+                              } else {
+                                // 清空
+                                checkedIds.clear();
+                              }
+                            });
+                          },
+                        ),
+                      if (!_showCheckbox)
+                        PopupMenuButton<String>(
+                          icon: Icon(
+                            Icons.more_vert_rounded,
+                            color: orderField == 'id'
+                                ? Theme.of(context).colorScheme.primary
+                                : null,
+                          ),
+                          iconSize: 20,
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                              value: 'sort_by_id_asc',
+                              child: Text(
+                                orderField == 'id' ? '默认排序' : '根据添加时间顺序排序',
+                              ),
+                            ),
+                            PopupMenuItem(value: 'show', child: Text('显示选择框')),
+                          ],
+                          onSelected: (value) {
+                            if (value == 'show') {
+                              _showCheckbox = true;
+                              return;
+                            }
+                            if (value == 'sort_by_id_asc') {
+                              if (orderField == 'id') {
+                                orderField = null;
+                                orderDirection = null;
+                              } else {
+                                orderField = 'id';
+                                orderDirection = 'asc';
+                              }
+                              _loadSongs();
+                              return;
+                            }
+                          },
+                        ),
                     ],
                   ),
                 ),
@@ -321,7 +442,6 @@ class LibraryViewState extends State<LibraryView> implements ShowAwarePage {
                     final isHovered = !_isScrolling && _hoveredIndex == index;
                     final isSelected =
                         playerProvider.currentSong?.id == songs[index].id;
-
                     return Card(
                       elevation: 0,
                       margin: const EdgeInsets.symmetric(
@@ -357,18 +477,18 @@ class LibraryViewState extends State<LibraryView> implements ShowAwarePage {
                                   // 使用Container来扩展可点击区域，覆盖整个左侧
                                   width: double.infinity,
                                   height: double.infinity,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Stack(
-                                      children: [
-                                        // 透明的全覆盖层，确保整个区域都可以点击
-                                        Positioned.fill(
-                                          child: Container(
-                                            color: Colors.transparent,
-                                          ),
+                                  child: Stack(
+                                    children: [
+                                      // 透明的全覆盖层，确保整个区域都可以点击
+                                      Positioned.fill(
+                                        child: Container(
+                                          color: Colors.transparent,
                                         ),
-                                        // 实际内容
-                                        Row(
+                                      ),
+                                      // 实际内容
+                                      Padding(
+                                        padding: EdgeInsets.all(8),
+                                        child: Row(
                                           children: [
                                             // 封面图
                                             Container(
@@ -536,8 +656,8 @@ class LibraryViewState extends State<LibraryView> implements ShowAwarePage {
                                             ),
                                           ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -572,24 +692,52 @@ class LibraryViewState extends State<LibraryView> implements ShowAwarePage {
                                   : null,
                             ),
                           ),
-                          PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert_rounded),
-                            iconSize: 20,
-                            itemBuilder: (context) => const [
-                              PopupMenuItem(value: 'delete', child: Text('删除')),
-                            ],
-                            onSelected: (value) => {
-                              if (value == 'delete')
-                                {
-                                  database.deleteSong(songs[index].id),
-                                  CompactCenterSnackBar.show(
-                                    context,
-                                    "已删除 ${songs[index].title} - ${songs[index].artist ?? '未知艺术家'}",
-                                  ),
-                                  _loadSongs(),
-                                },
-                            },
-                          ),
+                          _showCheckbox
+                              ? Checkbox(
+                                  value: checkedIds.contains(songs[index].id),
+                                  onChanged: (v) {
+                                    if (v == true) {
+                                      checkedIds.add(songs[index].id);
+                                    } else {
+                                      checkedIds.remove(songs[index].id);
+                                    }
+                                  },
+                                )
+                              : PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert_rounded),
+                                  iconSize: 20,
+                                  itemBuilder: (context) => const [
+                                    // PopupMenuItem(
+                                    //   value: 'import_lrc',
+                                    //   child: Text('导入歌词'),
+                                    // ),
+                                    PopupMenuItem(
+                                      value: 'delete',
+                                      child: Text('删除'),
+                                    ),
+                                  ],
+                                  onSelected: (value) async{
+                                    // if (value == 'import_lrc') {
+                                    //   try {
+                                    //     await importService.importLRC(songs[index]);
+                                    //   } catch (e) {
+                                    //     CompactCenterSnackBar.show(context,"导入失败：$e");  
+                                    //     return;
+                                    //   }
+                                    //   CompactCenterSnackBar.show(context,"导入成功");
+                                    //   _loadSongs();
+                                    //   return;
+                                    // }
+                                    if (value == 'delete') {
+                                      database.deleteSong(songs[index].id);
+                                      CompactCenterSnackBar.show(
+                                        context,
+                                        "已删除 ${songs[index].title} - ${songs[index].artist ?? '未知艺术家'}",
+                                      );
+                                      _loadSongs();
+                                    }
+                                  },
+                                ),
                         ],
                       ),
                     );

@@ -1,7 +1,7 @@
 name: lzf_music
 description: "A new Flutter project."
 publish_to: 'none'
-version: 0.1.8
+version: 0.1.9
 
 environment:
   sdk: ^3.8.1
@@ -21,6 +21,7 @@ dependencies:
   shared_preferences: ^2.5.3
   url_launcher: ^6.3.2
   bitsdojo_window: ^0.1.6
+  flutter_charset_detector: ^5.0.0
 
 dev_dependencies:
   flutter_test:
