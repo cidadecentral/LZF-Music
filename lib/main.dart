@@ -79,6 +79,7 @@ class MainApp extends StatelessWidget {
         return MaterialApp(
           title: 'LZF Music',
           theme: ThemeData(
+            fontFamily: isWindows ? 'Microsoft YaHei' : null,
             brightness: Brightness.light,
             colorScheme: ColorScheme.fromSeed(
               seedColor: const Color(0xFF016B5B),
@@ -87,6 +88,7 @@ class MainApp extends StatelessWidget {
             useMaterial3: true,
           ),
           darkTheme: ThemeData(
+            fontFamily: isWindows ? 'Microsoft YaHei' : null,
             brightness: Brightness.dark,
             colorScheme: ColorScheme.fromSeed(
               seedColor: const Color(0xFF016B5B),

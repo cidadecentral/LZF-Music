@@ -134,7 +134,7 @@ class LibraryViewState extends State<LibraryView> implements ShowAwarePage {
               ),
               const SizedBox(height: 24),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.only(left: 8),
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -298,7 +298,15 @@ class LibraryViewState extends State<LibraryView> implements ShowAwarePage {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 80), // 为更多按钮预留空间
+                      const SizedBox(width: 40,),
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert_rounded),
+                        iconSize: 20,
+                        itemBuilder: (context) => const [
+                          PopupMenuItem(value: 'delete', child: Text('删除')),
+                        ],
+                        onSelected: (value) => {},
+                      ), // 为更多按钮预留空间
                     ],
                   ),
                 ),
@@ -386,10 +394,8 @@ class LibraryViewState extends State<LibraryView> implements ShowAwarePage {
                                                         width: 50,
                                                         height: 50,
                                                         fit: BoxFit.cover,
-                                                        cacheWidth:
-                                                            50, // 🔹关键：解码到小尺寸
-                                                        cacheHeight:
-                                                            50, // 🔹关键：解码到小尺寸
+                                                        cacheWidth: 150,
+                                                        cacheHeight: 150,
                                                       ),
                                                     )
                                                   : const Icon(
